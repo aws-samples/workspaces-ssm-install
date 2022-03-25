@@ -1,0 +1,196 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 
+  this code deploys 3 Lambdas for creating SSM activation, Adding Tags to 
+  Managed instances and then also a function to check if a workspace exits
+  as a managed instance
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 120
+    MemorySize: 128
+Parameters:
+  stackregion:
+    Type: String
+    Description: The region where the template has to be deployed.
+    Default: 'us-east-1'
+  ADUsername:
+    Type: String
+    Description: AD user account that has permissions to list AD users and group 
+    Default: ''
+  ADPassword:
+    Type: String
+    Description: Password 
+    Default: ''
+
+
+Resources:
+  wsfindandgetactivatefn:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Environment:
+       Variables:
+        stackregion: !Ref stackregion  
+        instancerole: !Ref WSMIRole
+      Policies:
+      - Statement:
+        - Sid: DSdescribePolicy
+          Effect: Allow
+          Action:
+          - ds:DescribeDirectories
+          Resource: '*'
+        - Sid: WSdescribePolicy
+          Effect: Allow
+          Action:
+          - workspaces:DescribeWorkspaces
+          Resource: '*'
+        - Sid: SSMpolicies
+          Effect: Allow
+          Action:
+          - ssm:CreateActivation
+          - ssm:DeleteAssociation
+          - ssm:DeregisterManagedInstance
+          - ssm:DescribeEffectiveInstanceAssociations
+          - ssm:GetInventory
+          Resource: '*' 
+        - Sid: ssmpassrole
+          Effect: Allow
+          Action:
+          - iam:PassRole
+          - iam:GetRole
+          Resource: '*'   
+   
+      Events:
+        wsfindandactivateapi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /getactivation
+            Method: get
+            RequestParameters:
+             - method.request.querystring.hostname
+             - method.request.querystring.wsregion
+             - method.request.querystring.username
+             - method.request.querystring.ipadd
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./findandactivate
+      DockerTag: python3.9-v1
+  
+  checkmistatus:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Environment:
+       Variables:
+        stackregion: !Ref stackregion  
+      Policies:
+      - Statement:
+        - Sid: ssmgetconnectionstat
+          Effect: Allow
+          Action:
+          - ssm:GetConnectionStatus
+          - ssm:GetInventory
+          Resource: '*'
+      Events:
+        checkmistatus:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /checkmistat
+            Method: get
+            RequestParameters:
+             - method.request.querystring.wsid
+             - method.request.querystring.hostname
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./checkmistatus
+      DockerTag: python3.9-v1
+  
+  WSMIRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ssm.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'ssmrole'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                  - s3:GetEncryptionConfiguration
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource:
+                  - 'arn:aws:kms:us-east-1:233016454780:key/ad4f1a71-138e-404b-8be0-573287cd1098'
+
+
+  wsaddtagFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Environment:
+       Variables:
+        stackregion: !Ref stackregion 
+      Policies:
+      - Statement:
+        - Sid: SSMpolicies
+          Effect: Allow
+          Action:
+          - ssm:AddTagsToResource
+          Resource: '*'
+      Events:
+        wsaddtag:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /wsmiaddtag
+            Method: get
+            RequestParameters:
+            - method.request.querystring.wsid
+            - method.request.querystring.miid
+            - method.request.querystring.hostname
+            - method.request.querystring.username
+            - method.request.querystring.directoryid
+            - method.request.querystring.wsregion
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./wsaddtag
+      DockerTag: python3.9-v1
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  workspacessminstallapi:
+    Description: "API Gateway endpoint Base URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/?"
+  wsfindandgetactivatefn:
+    Description: "get WSID search create activation Function ARN"
+    Value: !GetAtt wsfindandgetactivatefn.Arn
+  checkmistatus:
+    Description: "check managed instance status Function ARN"
+    Value: !GetAtt checkmistatus.Arn
+  wsaddtagFunction:
+    Description: "Add tags to managed instance Function ARN"
+    Value: !GetAtt wsaddtagFunction.Arn
+  managedinstancerole:
+    Description: "Role assumed by the SSM managed instances"
+    Value: !GetAtt WSMIRole.Arn  

@@ -1,0 +1,10 @@
+[Unit]
+Description=checkssmscript
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+
+[Service]
+ExecStart=/usr/bin/pwsh /usr/local/bin/finalmultiplatformloginscript.ps1
+Type=oneshot
