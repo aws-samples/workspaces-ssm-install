@@ -239,7 +239,7 @@ function installssm
     write-log -Message "adding tag to instance " -path $logfile -level INFO
     $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
     $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
-    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+    write-log -Message "add tags API got response $addingtagtomi " -path $logfile -level INFO
     write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
     }  
     
