@@ -108,6 +108,22 @@ function checkssmservice
     return $serivicestatus
 }
 
+function addadgrouptags
+    {
+        Param(
+        [parameter(Mandatory=$true)]
+        [String]
+        $miid
+        )
+        $wsaddgrouptag= "ad/?miid=" + $miid + "&username=" +$username
+        $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
+        write-log -Message "final add AD group tag to ws url is $finaladdadtaguri " -path $logfile -level INFO
+        write-log -Message "adding AD group tag to instance " -path $logfile -level INFO
+        $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
+        write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
+    return $ssm_reg_stat
+    }
+
 function ssmregcheck
     {
         Param(
@@ -233,14 +249,11 @@ function installssm
     $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
                          $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
     $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
-    $wsaddgrouptag= "ad/?miid=" + $workspaceID + "&username=" +$username
-    $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
     write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
     write-log -Message "adding tag to instance " -path $logfile -level INFO
     $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
-    $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
-    write-log -Message "add tags API got response $addingtagtomi " -path $logfile -level INFO
-    write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
+    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+    addadgrouptags($managedinstid.'instance-id')
     }  
     
 #Starting the main script
@@ -362,12 +375,14 @@ if (!$domainname)
                             switch ($getmistatus.pingstatus)
                             {
                                 "connected" {
-                                write-log -Message "The machine is online and managed. Northing to do " -path $logfile -level INFO}
+                                write-log -Message "The machine is online and managed. Northing to do " -path $logfile -level INFO
+                                addadgrouptags($managedinstid.'instance-id')}
                                 "not_found" {
                                 write-log -Message "SSM is running locally but not present in found in SSM console" -path $logfile -level INFO
                                 ssmclean($BaseOS)
                                 installssm($username)}
                                 "notconnected" {
+                                
                                 write-log -Message "The machine is not online in SSM, so going to reinstalling the service" -path $logfile -level INFO
 
                                 ssmclean($BaseOS)
