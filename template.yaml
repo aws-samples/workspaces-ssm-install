@@ -164,7 +164,7 @@ Resources:
         stackregion: !Ref stackregion 
         ldapserv: !Ref LDAPserverIP
         basedn: !Ref basedn
-        domian: !Ref domain
+        domain: !Ref domain
         user: !Ref user
       VpcConfig:
         SecurityGroupIds: 
