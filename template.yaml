@@ -250,7 +250,7 @@ Outputs:
     Value: !GetAtt wsaddtagFunction.Arn
   addgrouptagfn:
     Description: "Add AD Group tags to managed instance Function ARN"
-    Value: !GetAtt   addgrouptagfn:.Arn
+    Value: !GetAtt addgrouptagfn:.Arn
   managedinstancerole:
     Description: "Role assumed by the SSM managed instances"
     Value: !GetAtt WSMIRole.Arn  
