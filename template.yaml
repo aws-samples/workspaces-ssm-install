@@ -14,15 +14,31 @@ Globals:
 Parameters:
   stackregion:
     Type: String
-    Description: The region where the template has to be deployed.
+    Description: The region you want to have Managed instances in SSM This is where you would deploy this stack.
     Default: 'us-east-1'
-  ADUsername:
+  LDAPserverIP:
     Type: String
-    Description: AD user account that has permissions to list AD users and group 
+    Description: IP Address of the DC that can be used to get group details
     Default: ''
-  ADPassword:
+  SubnetID:
     Type: String
-    Description: Password 
+    Description: Subnet ID of the AD connector.
+    Default: ''
+  SGgroup:
+    Type: String
+    Description: Security Group of the AD connector This is needed for the function to connect to AD and get groups
+    Default: ''  
+  basedn:
+    Type: String
+    Description: Domian base DN eg = DC=microsoft,dC=com
+    Default: ''  
+  domain:
+    Type: String
+    Description: domain name in the format conteso.com
+    Default: '' 
+  user:
+    Type: String
+    Description: AD username for ldap queries just only the username without any quotations
     Default: ''
 
 
@@ -107,7 +123,68 @@ Resources:
       Dockerfile: Dockerfile
       DockerContext: ./checkmistatus
       DockerTag: python3.9-v1
-  
+    
+  wsaddtagFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Environment:
+       Variables:
+        stackregion: !Ref stackregion 
+      Policies:
+      - Statement:
+        - Sid: SSMpolicies
+          Effect: Allow
+          Action:
+          - ssm:AddTagsToResource
+          Resource: '*'
+      Events:
+        wsaddtag:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /wsmiaddtag
+            Method: get
+            RequestParameters:
+            - method.request.querystring.wsid
+            - method.request.querystring.miid
+            - method.request.querystring.hostname
+            - method.request.querystring.username
+            - method.request.querystring.directoryid
+            - method.request.querystring.wsregion
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./wsaddtag
+      DockerTag: python3.9-v1
+      
+  addgrouptagfn:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+       Variables:
+        stackregion: !Ref stackregion 
+        ldapserv: !Ref LDAPserverIP
+        basedn: !Ref basedn
+        domian: !Ref domain
+        user: !Ref user
+
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SGgroup 
+        SubnetIds:
+          - !Ref SubnetID
+      Policies:
+      - Statement:
+        - Sid: ssmgetparam
+          Effect: Allow
+          Action:
+          - ssm:GetParameters
+          - ssm:AddTagsToResource
+          Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/ad*'
+        - Sid: secrets
+          Effect: Allow
+          Action:
+          - secretsmanager:GetSecretValue
+          Resource: '*' 
   WSMIRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -141,39 +218,6 @@ Resources:
                   - kms:Decrypt
                 Resource:
                   - 'arn:aws:kms:us-east-1:233016454780:key/ad4f1a71-138e-404b-8be0-573287cd1098'
-
-
-  wsaddtagFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      PackageType: Image
-      Environment:
-       Variables:
-        stackregion: !Ref stackregion 
-      Policies:
-      - Statement:
-        - Sid: SSMpolicies
-          Effect: Allow
-          Action:
-          - ssm:AddTagsToResource
-          Resource: '*'
-      Events:
-        wsaddtag:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /wsmiaddtag
-            Method: get
-            RequestParameters:
-            - method.request.querystring.wsid
-            - method.request.querystring.miid
-            - method.request.querystring.hostname
-            - method.request.querystring.username
-            - method.request.querystring.directoryid
-            - method.request.querystring.wsregion
-    Metadata:
-      Dockerfile: Dockerfile
-      DockerContext: ./wsaddtag
-      DockerTag: python3.9-v1
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
