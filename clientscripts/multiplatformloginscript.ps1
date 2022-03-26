@@ -231,12 +231,16 @@ function installssm
     $managedinstid=ssmregcheck($BaseOS)
     write-log -Message " Found the MI ID from SSM as $managedinstid " -path $logfile -level INFO
     $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
-     $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
+                         $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
     $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
+    $wsaddgrouptag= "ad/?miid=" + $workspaceID + "&username=" +$username
+    $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
     write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
     write-log -Message "adding tag to instance " -path $logfile -level INFO
     $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
-    write-log -Message "add tag API got response $addingtagtomi " -path $logfile -level INFO
+    $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
+    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+    write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
     }  
     
 #Starting the main script
