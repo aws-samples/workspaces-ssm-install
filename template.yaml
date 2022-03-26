@@ -186,7 +186,7 @@ Resources:
           Resource: '*' 
       PackageType: Image
       Events:
-        add_ad_tags:
+        addadtags:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /ad
