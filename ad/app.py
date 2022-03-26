@@ -6,7 +6,6 @@ from ldap3.extend.microsoft.addMembersToGroups import ad_add_members_to_groups a
 
 #secrets = boto3.client('secretsmanager')
 #ds = boto3.client('ds')
-grouparray=[]
 
 def addtagfunc(ssmclient,miid,tagkey,tagvalue):
    try:
@@ -26,6 +25,7 @@ def addtagfunc(ssmclient,miid,tagkey,tagvalue):
 
 
 def lambda_handler(event, context):
+    grouparray=[]
     region= os.environ['stackregion']
     ldapserv= os.environ['ldapserv']
     basedn=os.environ['basedn']
@@ -49,11 +49,11 @@ def lambda_handler(event, context):
     conn.search(basedn,serchstring, attributes=['memberOf'])
     response = json.loads(conn.response_to_json())
     print(response)
+    w=[]
     for i in range(len(response['entries'][0]['attributes']['memberOf'])):
         a=response['entries'][0]['attributes']['memberOf'][i].split(",")[0]
         w=a.split('=')
         print(w[1])
-        
         outval=addtagfunc(ssmclient,miid,w[1],'yes')
         grouparray.append(w[1])
     print(grouparray)
