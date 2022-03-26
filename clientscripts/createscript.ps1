@@ -1,4 +1,3 @@
-
 if ($IsLinux) {
     Set-Variable -Name "BaseOS" -Value ("Linux") -Scope global
                 }
@@ -12,8 +11,7 @@ $insertstr= "Set-Variable -Name wsfbaseurl -Value ('" + $BaseURL + "') -Scope gl
 
 
 $insertstr | Set-Content tempfile.txt
-Get-Content multiplatformloginscript.ps1 |
-Add-Content tempfile.txt
+Get-Content multiplatformloginscript.ps1 | Add-Content tempfile.txt
 Rename-Item tempfile.txt -NewName finalmultiplatformloginscript.ps1
 
 switch ($BaseOS)
