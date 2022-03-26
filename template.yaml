@@ -166,7 +166,6 @@ Resources:
         basedn: !Ref basedn
         domian: !Ref domain
         user: !Ref user
-
       VpcConfig:
         SecurityGroupIds: 
           - !Ref SGgroup 
@@ -185,6 +184,20 @@ Resources:
           Action:
           - secretsmanager:GetSecretValue
           Resource: '*' 
+      PackageType: Image
+      Events:
+        add_ad_tags:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /ad
+            Method: get
+            RequestParameters:
+            - method.request.querystring.miid
+            - method.request.querystring.username
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./ad
+      DockerTag: python3.8-v1
   WSMIRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -235,6 +248,9 @@ Outputs:
   wsaddtagFunction:
     Description: "Add tags to managed instance Function ARN"
     Value: !GetAtt wsaddtagFunction.Arn
+  addgrouptagfn:
+    Description: "Add AD Group tags to managed instance Function ARN"
+    Value: !GetAtt   addgrouptagfn:.Arn
   managedinstancerole:
     Description: "Role assumed by the SSM managed instances"
     Value: !GetAtt WSMIRole.Arn  
