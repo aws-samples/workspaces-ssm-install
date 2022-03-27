@@ -24,6 +24,7 @@ switch ($BaseOS)
             Copy-Item ./finalmultiplatformloginscript.ps1 /usr/local/bin/finalmultiplatformloginscript.ps1
             Copy-Item ./ssminstall.service /etc/systemd/system/
             Copy-Item ./ssminstall.timer /etc/systemd/system/
+            Remove-Item ./finalmultiplatformloginscript.ps1
              systemctl enable --now ssminstall.timer
              systemctl enable --now ssminstall.service
              systemctl daemon-reload
@@ -43,6 +44,7 @@ switch ($BaseOS)
                 }
              Copy-Item .\finalmultiplatformloginscript.ps1 $folderloc -force
              Copy-Item .\trigger.bat $folderloc
+             Remove-Item .\finalmultiplatformloginscript.ps1
     
     schtasks /create /tn "ssm_Install_script" /xml "./schldtskwin.xml" 
             }
