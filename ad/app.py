@@ -1,5 +1,6 @@
 import json
 import os
+from time import sleep
 import boto3
 from ldap3 import Server, Connection, Tls, NTLM, ALL
 from ldap3.extend.microsoft.addMembersToGroups import ad_add_members_to_groups as addUsersInGroups
@@ -63,6 +64,7 @@ def lambda_handler(event, context):
             SecretId='adpasswd'
         )
     removeADgrouptags(ssmclient,miid)
+    sleep(15)
     serchstring ="(&(objectclass=user)(sAMAccountName=" + username + "))"
     server = Server(ldapserv, get_info=ALL)
     conn = Connection(server, user=ldapuser, password=get_secret_val['SecretString'], authentication=NTLM, auto_bind=True)
