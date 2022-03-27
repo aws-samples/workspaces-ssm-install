@@ -39,7 +39,7 @@ switch ($BaseOS)
                 }
             else{
                 New-Item $folderloc -ItemType Directory
-                Write-Host"destination folder created"
+                Write-Host "destination folder created"
                 }
              Copy-Item .\finalmultiplatformloginscript.ps1 $folderloc -force
              Copy-Item .\trigger.bat $folderloc
