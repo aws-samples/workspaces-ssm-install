@@ -38,7 +38,7 @@ def removeADgrouptags(ssmclient,miid):
     removekeyaction = ssmclient.remove_tags_from_resource(
         ResourceType='ManagedInstance',
         ResourceId=miid,
-        TagKeys=[removekeyarray]
+        TagKeys=[str(removekeyarray)]
         )
     print('Removed Key',removekeyaction)
 
