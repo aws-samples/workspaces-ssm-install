@@ -177,7 +177,7 @@ Resources:
           Effect: Allow
           Action:
           - ssm:ListTagsForResource
-          - ssm:AddTagsToResource
+          - ssm:ListTagsForResource
           Resource: '*'
         - Sid: secrets
           Effect: Allow
