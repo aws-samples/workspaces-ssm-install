@@ -179,7 +179,6 @@ Resources:
           - ssm:ListTagsForResource
           - ssm:AddTagsToResource
           - ssm:RemoveTagsFromResource
-          - 
           Resource: '*'
         - Sid: secrets
           Effect: Allow
