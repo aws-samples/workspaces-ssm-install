@@ -236,7 +236,7 @@ function installssm
     write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
     write-log -Message "adding tag to instance " -path $logfile -level INFO
     $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
-    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+    write-log -Message "add tags API got response $addingtagtomi " -path $logfile -level INFO
     $wsaddgrouptag= "ad/?miid=" + $managedinstid.'instance-id' + "&username=" +$username
     $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
     $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
@@ -364,7 +364,6 @@ if (!$domainname)
                             {
                                 "connected" {
                                 write-log -Message "The machine is online and managed. Northing to do " -path $logfile -level INFO
-                                write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
                                     $wsaddgrouptag= "ad/?miid=" + $managedinstid.'instance-id' + "&username=" +$username
                                     $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
                                     $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
