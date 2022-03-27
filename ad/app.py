@@ -23,6 +23,24 @@ def addtagfunc(ssmclient,miid,tagkey,tagvalue):
    except:
        print ('failed adding tag') 
 
+def removeADgrouptags(ssmclient,miid):
+    removekeyarray=[]
+    listtag = ssmclient.list_tags_for_resource(
+    ResourceType='ManagedInstance',
+    ResourceId=miid)
+    removekeyarray=[]
+    for tags in range(len(listtag['TagList'])):
+        if listtag['TagList'][tags]['Key'].startswith('ADGroup'):
+            removekeyarray.append(listtag['TagList'][tags]['Key']) 
+        else:
+            continue
+    print(removekeyarray)
+    removekeyaction = ssmclient.remove_tags_from_resource(
+        ResourceType='ManagedInstance',
+        ResourceId=miid,
+        TagKeys=[removekeyarray]
+        )
+    print('Removed Key',removekeyaction)
 
 def lambda_handler(event, context):
     grouparray=[]
@@ -42,7 +60,7 @@ def lambda_handler(event, context):
     get_secret_val = sec.get_secret_value(
             SecretId='adpasswd'
         )
-
+    removeADgrouptags(miid)
     serchstring ="(&(objectclass=user)(sAMAccountName=" + username + "))"
     server = Server(ldapserv, get_info=ALL)
     conn = Connection(server, user=ldapuser, password=get_secret_val['SecretString'], authentication=NTLM, auto_bind=True)
