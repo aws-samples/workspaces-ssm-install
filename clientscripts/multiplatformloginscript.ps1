@@ -114,14 +114,10 @@ function addadgrouptags
         [parameter(Mandatory=$true)]
         [String]
         $miid,
-        [parameter(Mandatory=$false)]
-        [String]
-        $DirectoryID,
-        [parameter(Mandatory=$false)]
-        [String]
-        $workspaceID
+        [String]$DirectoryID,
+        [String]$workspaceID
         )
-        
+        Write-Log -Message " starting addadgrouptag function " -path $logfile -level INFO
         $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $miid + "&hostname=" +
                              $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
         $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
