@@ -176,7 +176,7 @@ Resources:
         - Sid: ssmgetparam
           Effect: Allow
           Action:
-          - ssm:GetParameters
+          - ssm:ListTagsForResource
           - ssm:AddTagsToResource
           Resource: '*'
         - Sid: secrets
