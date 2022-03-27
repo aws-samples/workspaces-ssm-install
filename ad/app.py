@@ -54,7 +54,8 @@ def lambda_handler(event, context):
         a=response['entries'][0]['attributes']['memberOf'][i].split(",")[0]
         w=a.split('=')
         print(w[1])
-        outval=addtagfunc(ssmclient,miid,w[1],'yes')
+        tagkey= 'ADGroup_'+ w[1]
+        outval=addtagfunc(ssmclient,miid,w[1],'ADGROUP')
         grouparray.append(w[1])
     print(grouparray)
     if outval != 'added_Tag':

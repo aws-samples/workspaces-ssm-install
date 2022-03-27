@@ -113,8 +113,22 @@ function addadgrouptags
         Param(
         [parameter(Mandatory=$true)]
         [String]
-        $miid
+        $miid,
+        [parameter(Mandatory=$true)]
+        [String]
+        $DirectoryID,
+        [parameter(Mandatory=$true)]
+        [String]
+        $workspaceID
         )
+        
+        $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $miid + "&hostname=" +
+                             $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
+        $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
+        write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
+        write-log -Message "adding tag to instance " -path $logfile -level INFO
+        $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
+        write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
         $wsaddgrouptag= "ad/?miid=" + $miid + "&username=" +$username
         $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
         write-log -Message "final add AD group tag to ws url is $finaladdadtaguri " -path $logfile -level INFO
@@ -215,7 +229,7 @@ function installssm
     $activationid= $ssmRegistration.ActivationId
     $workspaceID = $ssmRegistration.wsid
     $DirectoryID = $ssmRegistration.directoryid
-    write-log -Message "line196 directory id is $DirectoryID " -path $logfile -level INFO
+    write-log -Message " directory id is $DirectoryID " -path $logfile -level INFO
     write-log -Message "activationcode is $activationcode and activationID is $activationid" -path $logfile -level INFO
     switch ($BaseOS)
     {
@@ -245,15 +259,8 @@ function installssm
     }
     sleep(20)
     $managedinstid=ssmregcheck($BaseOS)
-    write-log -Message " Found the MI ID from SSM as $managedinstid " -path $logfile -level INFO
-    $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
-                         $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
-    $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
-    write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
-    write-log -Message "adding tag to instance " -path $logfile -level INFO
-    $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
-    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
-    addadgrouptags($managedinstid.'instance-id')
+    write-log -Message " Found the MI ID from SSM as $managedinstid.'instance-id' " -path $logfile -level INFO
+    addadgrouptags($managedinstid.'instance-id',$DirectoryID,$workspaceID)
     }  
     
 #Starting the main script
