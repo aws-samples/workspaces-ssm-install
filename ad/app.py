@@ -60,7 +60,7 @@ def lambda_handler(event, context):
     get_secret_val = sec.get_secret_value(
             SecretId='adpasswd'
         )
-    removeADgrouptags(miid)
+    removeADgrouptags(ssmclient,miid)
     serchstring ="(&(objectclass=user)(sAMAccountName=" + username + "))"
     server = Server(ldapserv, get_info=ALL)
     conn = Connection(server, user=ldapuser, password=get_secret_val['SecretString'], authentication=NTLM, auto_bind=True)
