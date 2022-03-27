@@ -110,6 +110,7 @@ function checkssmservice
 
 function addadgrouptags
     {
+        [cmdletbinding()]
         Param(
         [parameter(Mandatory=$true)]
         [String]
