@@ -28,26 +28,34 @@ def lambda_handler(event, context):
                 },
                   ])
         print('instance list is', instancelist)
-        for i in range(len(instancelist['Entities'])):
-            print (instancelist['Entities'][i])
-            if instancelist['Entities'][i]['Id'] == wsid and instancelist['Entities'][i]['Data']['AWS:InstanceInformation']['Content'][0]['InstanceStatus'] != 'Terminated':
-                try:
-                    print ('Instance found in inventory and is not terminated hence continuing')
-                    response = ssmclient.get_connection_status(
-                                Target=wsid
-                                )
-                    pingstat= response['Status']
-                    if  pingstat == 'connected':
-                        print("machine is connected")
-                        break
-                except botocore.exceptions.ClientError as error:
-                    print (error)
-                    print('error calling instance info')
-                    pingstat= "error"
-                print ('got ping status response as', pingstat)
-            else :
-                print('managed instance terminated')
-                pingstat= "not_found" 
+        if len(instancelist['Entities']) == :
+            print ( 'The instance list is empty, so the machine thinkhs its managed but its not')
+            pingstat= "not_found" 
+            return {
+            'statusCode': 200,
+            'body': json.dumps({'pingstatus': pingstat})
+            }
+        else:
+            for i in range(len(instancelist['Entities'])):
+                print (instancelist['Entities'][i])
+                if instancelist['Entities'][i]['Id'] == wsid and instancelist['Entities'][i]['Data']['AWS:InstanceInformation']['Content'][0]['InstanceStatus'] != 'Terminated':
+                    try:
+                        print ('Instance found in inventory and is not terminated hence continuing')
+                        response = ssmclient.get_connection_status(
+                                    Target=wsid
+                                    )
+                        pingstat= response['Status']
+                        if  pingstat == 'connected':
+                            print("machine is connected")
+                            break
+                    except botocore.exceptions.ClientError as error:
+                        print (error)
+                        print('error calling instance info')
+                        pingstat= "error"
+                    print ('got ping status response as', pingstat)
+                else :
+                    print('managed instance terminated')
+                    pingstat= "not_found" 
 
     except botocore.exceptions.ClientError as error: 
         print (error)
