@@ -256,8 +256,9 @@ function installssm
     }
     sleep(20)
     $managedinstid=ssmregcheck($BaseOS)
-    write-log -Message " Found the MI ID from SSM as $managedinstid.'instance-id' " -path $logfile -level INFO
-    addadgrouptags($managedinstid.'instance-id',$DirectoryID,$workspaceID)
+    $mid= $managedinstid.'instance-id'.tostring()
+    write-log -Message " Found the MI ID from SSM as $mid " -path $logfile -level INFO
+    addadgrouptags($mid,$DirectoryID,$workspaceID)
     }  
     
 #Starting the main script
