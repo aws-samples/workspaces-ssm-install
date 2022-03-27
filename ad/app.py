@@ -35,13 +35,14 @@ def removeADgrouptags(ssmclient,miid):
         else:
             continue
     print(removekeyarray)
-    for eachkey in removekeyarray:
-        removekeyaction = ssmclient.remove_tags_from_resource(
-            ResourceType='ManagedInstance',
-            ResourceId=miid,
-            TagKeys=[str(eachkey)]
-            )
-    print('Removed Key',removekeyaction)
+    if len(removekeyarray) == 0:
+        for eachkey in removekeyarray:
+            removekeyaction = ssmclient.remove_tags_from_resource(
+                ResourceType='ManagedInstance',
+                ResourceId=miid,
+                TagKeys=[str(eachkey)]
+                )
+            print('Removed Key',removekeyaction)
 
 def lambda_handler(event, context):
     grouparray=[]
