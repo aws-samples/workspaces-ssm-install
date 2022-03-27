@@ -108,29 +108,6 @@ function checkssmservice
     return $serivicestatus
 }
 
-function addadgrouptags
-    {
-        Param(
-            [parameter(Mandatory=$true)]
-            [String]
-            $miid
-            )
-        Write-Log -Message " starting addadgrouptag function " -path $logfile -level INFO
-        $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $miid + "&hostname=" +
-                             $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
-        $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
-        write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
-        write-log -Message "adding tag to instance " -path $logfile -level INFO
-        $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
-        write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
-        $wsaddgrouptag= "ad/?miid=" + $miid + "&username=" +$username
-        $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
-        write-log -Message "final add AD group tag to ws url is $finaladdadtaguri " -path $logfile -level INFO
-        write-log -Message "adding AD group tag to instance " -path $logfile -level INFO
-        $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
-        write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
-    }
-
 function ssmregcheck
     {
         Param(
@@ -154,7 +131,11 @@ function ssmregcheck
 
 function getting_ssm_reg_code
     {
-   
+    Param(
+        [parameter(Mandatory=$true)]
+        [String]
+        $username
+        )
     $finalgetwsidandactivurl = $wsfbaseurl + "getactivation?hostname=" + $hostnamefqdn + "&username=" + $username + "&region=" + $wsregion + "&ipadd=" + $ipadd
     write-log -Message " final get ws and activation URL is $finalgetwsidandactivurl " -path $logfile -level INFO
     $ssmRegistration = Invoke-WebRequest -Uri "$finalgetwsidandactivurl" -UseBasicParsing -SkipHttpErrorCheck 
@@ -216,9 +197,9 @@ function installssm
     write-log -Message "registration code is $ssmRegistration" -path $logfile -level INFO
     $activationcode=$ssmRegistration.activationcode
     $activationid= $ssmRegistration.ActivationId
-    $global:workspaceID = $ssmRegistration.wsid
-    $global:DirectoryID = $ssmRegistration.directoryid
-    write-log -Message " directory id is $DirectoryID " -path $logfile -level INFO
+    $workspaceID = $ssmRegistration.wsid
+    $DirectoryID = $ssmRegistration.directoryid
+    write-log -Message "line196 directory id is $DirectoryID " -path $logfile -level INFO
     write-log -Message "activationcode is $activationcode and activationID is $activationid" -path $logfile -level INFO
     switch ($BaseOS)
     {
@@ -248,10 +229,20 @@ function installssm
     }
     sleep(20)
     $managedinstid=ssmregcheck($BaseOS)
-    $global:mid= $managedinstid.'instance-id'
-    write-log -Message " Found the MI ID from SSM as $mid " -path $logfile -level INFO
-    addadgrouptags
+    write-log -Message " Found the MI ID from SSM as $managedinstid " -path $logfile -level INFO
+    $wstagstringurladd= "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
+                         $hostname + "&username=" + $username + "&directoryid=" +$DirectoryID +"&wsregion="+ $wsregion 
+    $finaladdtaguri = $wsfbaseurl +$wstagstringurladd
+    write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
+    write-log -Message "adding tag to instance " -path $logfile -level INFO
+    $addingtagtomi = Invoke-WebRequest -Uri $finaladdtaguri -UseBasicParsing | ConvertFrom-Json
+    write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+    $wsaddgrouptag= "ad/?miid=" + $managedinstid.'instance-id' + "&username=" +$username
+    $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
+    $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
+    write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO
     }  
+
     
 #Starting the main script
 #Declaring starting variables
@@ -373,13 +364,16 @@ if (!$domainname)
                             {
                                 "connected" {
                                 write-log -Message "The machine is online and managed. Northing to do " -path $logfile -level INFO
-                                addadgrouptags($managedinstid.'instance-id')}
+                                write-log -Message "add AD tags API got response $addingtagtomi " -path $logfile -level INFO
+                                    $wsaddgrouptag= "ad/?miid=" + $managedinstid.'instance-id' + "&username=" +$username
+                                    $finaladdadtaguri = $wsfbaseurl +$wsaddgrouptag
+                                    $addingadtagtomi = Invoke-WebRequest -Uri $finaladdadtaguri -UseBasicParsing | ConvertFrom-Json
+                                    write-log -Message "add AD tags API got response $addingadtagtomi " -path $logfile -level INFO}
                                 "not_found" {
                                 write-log -Message "SSM is running locally but not present in found in SSM console" -path $logfile -level INFO
                                 ssmclean($BaseOS)
                                 installssm($username)}
                                 "notconnected" {
-                                
                                 write-log -Message "The machine is not online in SSM, so going to reinstalling the service" -path $logfile -level INFO
 
                                 ssmclean($BaseOS)
