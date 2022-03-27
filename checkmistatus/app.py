@@ -28,7 +28,7 @@ def lambda_handler(event, context):
                 },
                   ])
         print('instance list is', instancelist)
-        if len(instancelist['Entities']) == :
+        if len(instancelist['Entities']) == 0 :
             print ( 'The instance list is empty, so the machine thinkhs its managed but its not')
             pingstat= "not_found" 
             return {
