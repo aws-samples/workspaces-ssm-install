@@ -114,10 +114,10 @@ function addadgrouptags
         [parameter(Mandatory=$true)]
         [String]
         $miid,
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$false)]
         [String]
         $DirectoryID,
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$false)]
         [String]
         $workspaceID
         )
