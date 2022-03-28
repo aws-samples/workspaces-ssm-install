@@ -20,7 +20,9 @@ The Solution contain the following
         sam build
         sam deploy --guided
 * Provide the Parameters for Region, DNS IP of the AD server, Subnet and security groups for the Lambda function to be created.
-* In the Stack output, you get the API Gateway endpoint needed that needed in the Powershell script to install SSM.
+* The Lambda script that adds Users AD groups as Tags to the Managed instance needs AD credentials to make LDAP calls. Create a AD user with rights to get users group membership. The template prompts to enter the username.
+* Save the AD password as a Secret of type 'Plaintext in AWS Secrets Manager as explained [*here*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_create-basic-secret.html)
+* In the Stack output, you get the API Gateway endpoint needed thats needed in the Powershell script to install SSM.
 ![alt text](Docs/samoutput.png)
 
 **Deploy Script on Workspace**
@@ -32,6 +34,8 @@ The client side script is written in Powershell that works on both windows and L
         cd workspaces-ssm-install
         cd clientscripts
         ./createscript.ps1
+    
+The script prompts to enter
 * The script does the following based on the OS
     >  *Windows*
     > - copies the script to C:\ProgramData\ssm_script
@@ -40,7 +44,8 @@ The client side script is written in Powershell that works on both windows and L
     >  *Linux*
     > - copies the script to /usr/local/bin
     > - creates systemd service and timer
-
+  
+Take an image of the workspace
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
