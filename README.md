@@ -28,7 +28,7 @@ The Solution contain the following
 
 **Deploy Script on Workspace**
 
-The client side script is written in Powershell that works on both windows and Linux. Install **Powershell** on a workspace before continuing.
+The client side script is written in Powershell that works on both windows and Linux. Install **Powershell 7** on a workspace before continuing. [Steps to install powershell on windows](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.2) [Steps to install powershell on Amazon Linux](https://docs.microsoft.com/en-us/powershell/scripting/install/install-rhel?view=powershell-7.2)
 * Clone the Repo to the workspace that is going to have the script installed and be used as Image
 * Open Powershell 7 command Prompt as Administrator
 * Follow the steps below
