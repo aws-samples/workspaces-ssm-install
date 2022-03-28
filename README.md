@@ -5,7 +5,7 @@ This is a soultion designed to automate installation, registration of Workspaces
 You deploy the Logon scripts to the Workspace and it calls API Endpoints to run LAmbda scripts that get SSM activation and ADD Tags to the Managed instance. 
 
 <p align="center">
-  <img src="/Docs/SSM_automation_architecture.jpg" width="550" height="250" title="Architecture Diagram">
+  <img src="/Docs/SSM_auto_architecture.jpg" width="550" height="250" title="Architecture Diagram">
 </p>
 
 Be sure to:
