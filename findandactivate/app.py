@@ -6,10 +6,12 @@
 import json
 import boto3
 import os
+from datetime import datetime,timedelta
 regionparam = os.environ['stackregion']
 instancerole = os.environ['instancerole']
 ssmclient = boto3.client('ssm',regionparam)
-
+delta = timedelta(hours=1)
+expiry = datetime.now() + delta
 def index(wuser,wsregion,ipadd):
     wsid=''
     #regions = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
@@ -123,7 +125,8 @@ def lambda_handler(event, context):
         Description='workspace',
         DefaultInstanceName=hostname,
         IamRole= instancerole,
-        RegistrationLimit=1
+        RegistrationLimit=1,
+        ExpirationDate=expiry
         )
         activationcode = activation['ActivationCode']
         print ('the activation code is', activationcode)
