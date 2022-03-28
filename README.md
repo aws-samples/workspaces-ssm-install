@@ -9,6 +9,10 @@ You deploy the Logon scripts to the Workspace and it calls API Endpoints to run 
 The Solution contain the following
 *   SAM Template that deploys the API Gateway and the Lambda Function
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
+##  Steps to deploy the solution
+* Clone the Repo to a machine that is configured to deploy resources in AWS.
+* checkout its <a href="/aws-samples/aws-lambda-adapter/blob/main/docs/design.md">design</a> and <a href="/aws-samples/aws-lambda-adapter/blob/main/docs/development.md">development</a> documents.</p>
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
