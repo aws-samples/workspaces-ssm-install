@@ -6,13 +6,17 @@ With Automated Installation of SSM agent, you can use SSM tools such as Patch Ma
 
 ![alt text](Docs/SSM_auto_architecture.png)
 ##  Usage
+
 The Solution contain the following
 *   SAM Template that deploys the API Gateway and the Lambda Function
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 ##  Steps to deploy the solution
+
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
-*  	[Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
-* 
+* [Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
+* Build and deploy the SAM application 
+    >sam build
+    >sam deploy --guided
 
 ## Security
 
