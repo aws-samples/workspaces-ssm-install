@@ -13,6 +13,7 @@ The Solution contain the following
 ##  Steps to deploy the solution
 
 **Deploy Server Side Stack**
+
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
 * [Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
 * Build and deploy the SAM application 
@@ -20,12 +21,13 @@ The Solution contain the following
         sam build
         sam deploy --guided
 * Provide the Parameters for Region, DNS IP of the AD server, Subnet and security groups for the Lambda function to be created.
-* The Lambda script that adds Users AD groups as Tags to the Managed instance needs AD credentials to make LDAP calls. Create a AD user with rights to get users group membership. The template prompts to enter the username.
-* Save the AD password as a Secret of type 'Plaintext in AWS Secrets Manager as explained [*here*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_create-basic-secret.html)
-* In the Stack output, you get the API Gateway endpoint needed thats needed in the Powershell script to install SSM.
+* The Lambda script that adds Users AD groups as Tags to the Managed instance needs AD credentials to make LDAP calls. Create a AD user with rights to get users group membership. The template prompts to enter the AD Username.
+* Save the AD password as a Secret of type 'Plaintext' in AWS Secrets Manager as explained [*here*](https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_create-basic-secret.html)
+* In the Stack output, you get the API Gateway endpoint  thats needed for the Powershell script configuration.
 ![alt text](Docs/samoutput.png)
 
 **Deploy Script on Workspace**
+
 The client side script is written in Powershell that works on both windows and Linux. Install **Powershell** on a workspace before continuing.
 * Clone the Repo to the workspace that is going to have the script installed and be used as Image
 * Open Powershell 7 command Prompt as Administrator
