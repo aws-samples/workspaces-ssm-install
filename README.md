@@ -11,7 +11,7 @@ The Solution contain the following
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 ##  Steps to deploy the solution
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
-* checkout its <a href="/aws-samples/aws-lambda-adapter/blob/main/docs/design.md">design</a> and <a href="/aws-samples/aws-lambda-adapter/blob/main/docs/development.md">development</a> documents.</p>
+* 
 
 ## Security
 
