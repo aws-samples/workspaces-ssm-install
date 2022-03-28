@@ -220,8 +220,9 @@ function installssm {
     sleep(20)
     $managedinstid = ssmregcheck($BaseOS)
     write-log -Message " Found the MI ID from SSM as $managedinstid " -path $logfile -level INFO
-    $wstagstringurladd = "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
-    $hostname + "&username=" + $username + "&directoryid=" + $DirectoryID + "&wsregion=" + $wsregion 
+    $wstagstringurladd = "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id'
+     + "&hostname=" + $hostname + "&username=" + $username + "&directoryid=" 
+     + $DirectoryID + "&wsregion=" + $wsregion +  "&OS=" +$BaseOS
     $finaladdtaguri = $wsfbaseurl + $wstagstringurladd
     write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
     write-log -Message "adding tag to instance " -path $logfile -level INFO

@@ -151,6 +151,8 @@ Resources:
             - method.request.querystring.username
             - method.request.querystring.directoryid
             - method.request.querystring.wsregion
+            - method.request.querystring.OS
+            
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./wsaddtag
@@ -241,7 +243,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   SsmAutomationAPIEndpoint:
     Description: "API Gateway endpoint Base URL"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/?"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   wsfindandgetactivatefn:
     Description: "get WSID search create activation Function ARN"
     Value: !GetAtt wsfindandgetactivatefn.Arn

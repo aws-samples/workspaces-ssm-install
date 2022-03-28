@@ -2,6 +2,7 @@
 #This script will check the find teh managed instance and add the Tag for it with the WS ID, this way we have the Managed instance to WS ID mapping in SSM
 
 
+from email.mime import base
 import json
 import boto3, os
 
@@ -32,7 +33,7 @@ def lambda_handler(event, context):
     username = event["queryStringParameters"]['username']
     directoryid = event["queryStringParameters"]['directoryid']
     region = event["queryStringParameters"]['wsregion']
-    
+    baseos= event["queryStringParameters"]['OS']
     nodetype= "AWSWorkspace"
     print ('wsid is', wsid)
     addtagfunc(ssmclient,miid,"workspaceID",wsid)
@@ -41,6 +42,7 @@ def lambda_handler(event, context):
     addtagfunc(ssmclient,miid,"nodetype",nodetype)
     addtagfunc(ssmclient,miid,"directoryid",directoryid)
     addtagfunc(ssmclient,miid,"wsregion",region)
+    addtagfunc(ssmclient,miid,"OS",baseos)
     outval=addtagfunc(ssmclient,miid,"hostname",hostname)
     if outval != 'added_Tag':
         return {
