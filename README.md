@@ -16,9 +16,9 @@ The Solution contain the following
 * [Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
 * Build and deploy the SAM application 
 
-    >sam build
-    >
-    >sam deploy --guided
+        >sam build
+        >
+        >sam deploy --guided
 
 ## Security
 
