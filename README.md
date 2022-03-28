@@ -12,12 +12,16 @@ The Solution contain the following
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 ##  Steps to deploy the solution
 
+**Deploy Server Side Stack**
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
 * [Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
 * Build and deploy the SAM application 
 
         sam build
         sam deploy --guided
+* Provide the Parameters for Region, DNS IP of the AD server, Subnet and security groups for the Lambda function to be created.
+* In the Stack output, you get the API Gateway endpoint needed that needed in the Powershell script to install SSM.
+![alt text](Docs/samoutput.png)
 
 ## Security
 
