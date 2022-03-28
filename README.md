@@ -36,6 +36,7 @@ The client side script is written in Powershell that works on both windows and L
     >  *Windows*
     > - copies the script to C:\ProgramData\ssm_script
     > - Creates a scheduled Task to run the script on startup and on schedule
+
     >  *Linux*
     > - copies the script to /usr/local/bin
     > - creates systemd service and timer
