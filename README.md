@@ -4,7 +4,7 @@ This is a soultion designed to automate installation, registration of Workspaces
 
 You deploy the Logon scripts to the Workspace and it calls API Endpoints to run LAmbda scripts that get SSM activation and ADD Tags to the Managed instance. 
 
-![alt text](aws-samples/workspaces-ssm-install/tree/main/Docs/SSM_auto_architecture.png)
+![alt text](Docs/SSM_auto_architecture.png)
 ##  Usage
 The Solution contain the following
 *   SAM Template that deploys the API Gateway and the Lambda Function
