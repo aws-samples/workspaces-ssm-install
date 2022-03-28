@@ -1,4 +1,4 @@
-**Automate SSM client Installation on Workspaces**
+## **Automate SSM client Installation on Workspaces**
 
 This is a soultion designed to automate installation & registration of Workspaces as SSM clients. Then it adds Tags to the Managed instance like Workspace ID, Assigned User, Directory ID, Region, Hostname and OS along with the AD groups the user is assigned.
 
