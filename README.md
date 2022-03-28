@@ -1,8 +1,8 @@
 Automate SSM client Installation on Workspaces
 
-This is a soultion designed to automate installation, registration of Workspaces as SSM clients and be able to add Tags about the workspace like Workspace ID, Assigned User, Directory ID, Region, Hostname and OS along with the AD groups the user is assigned. 
+This is a soultion designed to automate installation & registration of Workspaces as SSM clients. Then it adds Tags to the Managed instance like Workspace ID, Assigned User, Directory ID, Region, Hostname and OS along with the AD groups the user is assigned.
 
-You deploy the Logon scripts to the Workspace and it calls API Endpoints to run LAmbda scripts that get SSM activation and ADD Tags to the Managed instance. 
+With Automated Installation of SSM agent, you can use SSM tools such as Patch Managent, run Command, Automation and Distributor to Patch, deploy software and run compliance checks on your Workspace Fleet. You can also use SSM to [Monitoring managed node performance] (https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-monitoring.html) for torubleshooting purposes.
 
 ![alt text](Docs/SSM_auto_architecture.png)
 ##  Usage
@@ -11,7 +11,8 @@ The Solution contain the following
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 ##  Steps to deploy the solution
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
-*  	[setup AWS CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+*  	[Setup AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) Make sure to follow the steps on installing Docker based on the OS of your choice as we use Docker images 
+* 
 
 ## Security
 
