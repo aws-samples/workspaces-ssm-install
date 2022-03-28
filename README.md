@@ -11,7 +11,7 @@ The Solution contain the following
 *   Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 ##  Steps to deploy the solution
 * Clone the Repo to a machine that is configured to deploy resources in AWS.
-* 
+*  	[setup AWS CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
 ## Security
 
