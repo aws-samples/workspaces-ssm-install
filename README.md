@@ -33,7 +33,7 @@ The client side script is written in Powershell that works on both windows and L
 [Steps to install powershell on windows](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.2) 
 
 [Steps to install powershell on Amazon Linux](https://docs.microsoft.com/en-us/powershell/scripting/install/install-rhel?view=powershell-7.2)
-* Clone the Repo to the workspace that is going to have the script installed and be used as Image
+* Clone the Repo to the workspace that is going to have the script installed and be used for *Imaging*
 * Open Powershell 7 command Prompt as Administrator
 * Follow the steps below
 
@@ -41,7 +41,7 @@ The client side script is written in Powershell that works on both windows and L
         cd clientscripts
         ./createscript.ps1
     
-The script prompts to enter
+The script prompts to enter the API endpoint URL that was created in the Previous step 
 * The script does the following based on the OS
     >  *Windows*
     > - copies the script to C:\ProgramData\ssm_script
