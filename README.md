@@ -1,6 +1,6 @@
 ## **Automate SSM client Installation on Workspaces**
 
-This is a soultion designed to automate installation & registration of Workspaces as SSM clients. Then it adds Tags to the Managed instance like Workspace ID, Assigned User, Directory ID, Region, Hostname and OS along with the AD groups the user is assigned.
+This is a solution designed to automate installation & registration of Workspaces as SSM clients. It also adds Tags to the Managed instance (Workspace ID, Assigned User, Directory ID, Region, Hostname and OS along with the AD groups the user is assigned). The AD tags are Dynamic and change as Users AD group memberships change. These Tags can be used a way to create Target groups for SSM tasks such as Pachting, Package Deloyment and Run Command
 
 With Automated Installation of SSM agent, you can use SSM tools such as Patch Managent, run Command, Automation and Distributor to Patch, deploy software and run compliance checks on your Workspace Fleet. You can also use SSM to [Monitor managed node performance](https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-monitoring.html) for troubleshooting purposes.
 
