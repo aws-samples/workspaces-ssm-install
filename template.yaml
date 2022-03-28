@@ -12,7 +12,7 @@ Globals:
     Timeout: 120
     MemorySize: 128
 Parameters:
-  stackregion:
+  ssmregion:
     Type: String
     Description: The region you want to have Managed instances in SSM This is where you would deploy this stack.
     Default: 'us-east-1'
@@ -49,7 +49,7 @@ Resources:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref stackregion  
+        stackregion: !Ref ssmregion 
         instancerole: !Ref WSMIRole
       Policies:
       - Statement:
@@ -101,7 +101,7 @@ Resources:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref stackregion  
+        stackregion: !Ref ssmregion  
       Policies:
       - Statement:
         - Sid: ssmgetconnectionstat
@@ -130,7 +130,7 @@ Resources:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref stackregion 
+        stackregion: !Ref ssmregion 
       Policies:
       - Statement:
         - Sid: SSMpolicies
@@ -161,7 +161,7 @@ Resources:
     Properties:
       Environment:
        Variables:
-        stackregion: !Ref stackregion 
+        stackregion: !Ref ssmregion 
         ldapserv: !Ref LDAPserverIP
         basedn: !Ref basedn
         domain: !Ref domain
