@@ -23,6 +23,22 @@ The Solution contain the following
 * In the Stack output, you get the API Gateway endpoint needed that needed in the Powershell script to install SSM.
 ![alt text](Docs/samoutput.png)
 
+**Deploy Script on Workspace**
+The client side script is written in Powershell that works on both windows and Linux. Install **Powershell** on a workspace before continuing.
+* Clone the Repo to the workspace that is going to have the script installed and be used as Image
+* Open Powershell 7 command Prompt as Administrator
+* Follow the steps below
+
+        cd workspaces-ssm-install
+        cd clientscripts
+        ./createscript.ps1
+* The script does the following based on the OS
+    Windows
+    copies the script to C:\ProgramData\ssm_script
+    Creates a scheduled Task to run the script on startup and on schedule
+    Linux
+    copies the script to /usr/local/bin and creates systemd service and timer
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
