@@ -8,10 +8,10 @@ You deploy the Logon scripts to the Workspace and it calls API Endpoints to run 
   <img src="/Docs/SSM_auto_architecture.jpg" width="450" height="350" title="Architecture Diagram">
 </p>
 
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+##Usage
+The Solution contain the following
+*SAM Template that deploys the API Gateway and the Lambda Function
+*Powershell Script that is deployed to the Workspace Image that automates SSM Agent download, install and configuration
 
 ## Security
 
