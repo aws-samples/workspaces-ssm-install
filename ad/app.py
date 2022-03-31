@@ -1,41 +1,36 @@
 import json
 import os
-from time import sleep
 import boto3
-from ldap3 import Server, Connection, Tls, NTLM, ALL
-from ldap3.extend.microsoft.addMembersToGroups import ad_add_members_to_groups as addUsersInGroups
+from ldap3 import Server, Connection, NTLM, ALL
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-#secrets = boto3.client('secretsmanager')
-#ds = boto3.client('ds')
 
-def addtagfunc(ssmclient,miid,tagkey,tagvalue):
-   try:
-     wstag = ssmclient.add_tags_to_resource(
-                ResourceType='ManagedInstance',
-                ResourceId= miid,
-                Tags=[
-                    {
-                        'Key': tagkey,
-                        'Value': tagvalue
-                    },
-                ]
-                )
-     return ('added_Tag')
-   except:
-       print ('failed adding tag') 
+def addtagfunc(ssmclient, miid, tagkey, tagvalue):
+    try:
+        wstag = ssmclient.add_tags_to_resource(ResourceType='ManagedInstance',
+                    ResourceId= miid,
+                    Tags=[{'Key': tagkey,
+                    'Value': tagvalue },])
+        logger.info(wstag) 
+        return('added_Tag')
+    except:
+       logger.error('failed adding tag') 
+
 
 def removeADgrouptags(ssmclient,miid):
     removekeyarray=[]
     listtag = ssmclient.list_tags_for_resource(
     ResourceType='ManagedInstance',
-    ResourceId=miid)
-    removekeyarray=[]
+    ResourceId = miid)
+    removekeyarray = []
     for tags in range(len(listtag['TagList'])):
         if listtag['TagList'][tags]['Key'].startswith('ADGroup'):
             removekeyarray.append(listtag['TagList'][tags]['Key']) 
         else:
             continue
-    print(removekeyarray)
+    logger.info('got the tags to remove as %s ',removekeyarray)
     if len(removekeyarray) == 0:
         for eachkey in removekeyarray:
             removekeyaction = ssmclient.remove_tags_from_resource(
@@ -43,42 +38,46 @@ def removeADgrouptags(ssmclient,miid):
                 ResourceId=miid,
                 TagKeys=[str(eachkey)]
                 )
-            print('Removed Key',removekeyaction)
+            logger.info('Removed tags %s',removekeyaction)
+
 
 def lambda_handler(event, context):
-    grouparray=[]
-    region= os.environ['stackregion']
-    ldapserv= os.environ['ldapserv']
-    basedn=os.environ['basedn']
-    ldapdomain= os.environ['domain']
-    ldapname=os.environ['user']
-    ldapuser= ldapdomain +'\\'+ldapname
-    ssmclient= boto3.client('ssm', region)
+    grouparray = []
+    region = os.environ['stackregion']
+    ldapserv = os.environ['ldapserv']
+    basedn = os.environ['basedn']
+    ldapdomain = os.environ['domain']
+    ldapname = os.environ['user']
+    ldapuser = ldapdomain +'\\'+ldapname
+    ssmclient = boto3.client('ssm', region)
     sec = boto3.client(service_name='secretsmanager',region_name='us-east-1')
-    print(event)
+    logger.info(event)
     miid = event["queryStringParameters"]['miid']
     username = event["queryStringParameters"]['username']
-    print ('user is', username)
-
+    logger.info('user is %s', username)
     get_secret_val = sec.get_secret_value(
-            SecretId='adpasswd'
+            SecretId = 'adpasswd'
         )
     removeADgrouptags(ssmclient,miid)
-    serchstring ="(&(objectclass=user)(sAMAccountName=" + username + "))"
+    serchstring = "(&(objectclass=user)(sAMAccountName=" + username + "))"
     server = Server(ldapserv, get_info=ALL)
     conn = Connection(server, user=ldapuser, password=get_secret_val['SecretString'], authentication=NTLM, auto_bind=True)
     conn.search(basedn,serchstring, attributes=['memberOf'])
     response = json.loads(conn.response_to_json())
-    print(response)
-    w=[]
-    for i in range(len(response['entries'][0]['attributes']['memberOf'])):
-        a=response['entries'][0]['attributes']['memberOf'][i].split(",")[0]
-        w=a.split('=')
-        print(w[1])
-        tagkey= 'ADGroup_'+ w[1]
-        outval=addtagfunc(ssmclient,miid,tagkey,'ADGROUP')
-        grouparray.append(w[1])
-    print(grouparray)
+    logger.info(response)
+    groupname = []
+    
+    
+    for item in range(len(response['entries'][0]['attributes']['memberOf'])):
+        membervalues = response['entries'][0]['attributes']['memberOf'][item].split(",")[0]
+        groupname = membervalues.split('=')
+        logger.info(groupname[1])
+        tagkey = 'ADGroup_'+ groupname[1]
+        outval = addtagfunc(ssmclient,miid,tagkey,'ADGROUP')
+        grouparray.append(groupname[1])
+    logger.info('list if groups is %s',grouparray)
+    
+    
     if outval != 'added_Tag':
         return {
         "statusCode": 200,

@@ -1,12 +1,19 @@
-# This API is invoked to add Tag to the Workspace. The Logon Powershell script after installing and registering the SSM agent on the worksapce, get the managed instanceID and the WS ID and passes that as paramter.
-#This script will check the find teh managed instance and add the Tag for it with the WS ID, this way we have the Managed instance to WS ID mapping in SSM
+# This API is invoked to add Tag to the Workspace. The Logon Powershell script after installing 
+# and registering the SSM agent on the worksapce, 
+# get the managed instanceID and the WS ID and passes that as paramter.
+#This script will check the find teh managed instance and add the Tag for it with the WS ID,
+# this way we have the Managed instance to WS ID mapping in SSM
 
 
-from email.mime import base
 import json
 import boto3, os
+import logging
 
-# import requests
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+         
 def addtagfunc(ssmclient,miid,tagkey,tagvalue):
    try:
      wstag = ssmclient.add_tags_to_resource(
@@ -14,19 +21,21 @@ def addtagfunc(ssmclient,miid,tagkey,tagvalue):
                 ResourceId= miid,
                 Tags=[
                     {
-                        'Key': tagkey,
-                        'Value': tagvalue
+                    'Key': tagkey,
+                    'Value': tagvalue
                     },
                 ]
                 )
+     
      return ('added_Tag')
    except:
-       print ('failed adding tag') 
+      logger.error ('failed adding tag') 
+
 
 def lambda_handler(event, context):
     region= os.environ['stackregion']
     ssmclient= boto3.client('ssm', region)
-    print(event)
+    logger.info(event)
     wsid = event["queryStringParameters"]['wsid']
     miid = event["queryStringParameters"]['miid']
     hostname = event["queryStringParameters"]['hostname']
@@ -35,7 +44,7 @@ def lambda_handler(event, context):
     region = event["queryStringParameters"]['wsregion']
     baseos= event["queryStringParameters"]['OS']
     nodetype= "AWSWorkspace"
-    print ('wsid is', wsid)
+    logger.info ('wsid is %s', wsid)
     addtagfunc(ssmclient,miid,"workspaceID",wsid)
     addtagfunc(ssmclient,miid,"MIID",miid)
     addtagfunc(ssmclient,miid,"username",username)

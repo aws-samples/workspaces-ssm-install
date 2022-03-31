@@ -6,56 +6,60 @@
 import json
 import boto3
 import os
+import logging
 from datetime import datetime,timedelta
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 regionparam = os.environ['stackregion']
 instancerole = os.environ['instancerole']
 ssmclient = boto3.client('ssm',regionparam)
 delta = timedelta(hours=1)
 expiry = datetime.now() + delta
+
+
 def index(wuser,wsregion,ipadd):
-    wsid=''
-    #regions = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
-    #print(regions)
-    #regions = ["us-east-2","us-east-1","us-west-1","us-west-2","ap-south-1","ap-northeast-2","ap-southeast-1","ap-southeast-2","ap-northeast-1","ca-central-1","eu-central-1","eu-west-1","eu-west-2","sa-east-1","us-gov-west-1"]
-    #for region in regions:
-    print ("Working with region:",wsregion)
+    wsid = ''
+    logger.info("Working with region: %s",wsregion)
     ds = boto3.client('ds', region_name=wsregion)
+    
+    
     try:
         response = ds.describe_directories()
-        print ("Directory response:",response)
-        DirectoryID=[]
+        logger.info("Directory response: %s",response)
+        DirectoryID = []
         for i in range(0,len(response['DirectoryDescriptions'])):
-                print('Directory loop',i)
+                logger.info('Directory loop %s',i)
                 DirectoryID=response['DirectoryDescriptions'][i]['DirectoryId']
-                print (DirectoryID)
+                logger.info(DirectoryID)
                 wsclient = boto3.client('workspaces', region_name=wsregion)
                 try:
                     ws = wsclient.describe_workspaces(
-                    DirectoryId= DirectoryID,
-                    UserName=wuser)
-                    wsid= ws['Workspaces'][0]['WorkspaceId']
-                    print ("Workspace found",ws)
+                    DirectoryId = DirectoryID,
+                    UserName = wuser)
+                    wsid = ws['Workspaces'][0]['WorkspaceId']
+                    logger.info("Workspace found %s",ws)
                 except Exception as e:
                     #logging all the others as warning
-                    print ("failed getting workspace",e)
+                    logger.error("failed getting workspace %s",e)
                 if ws['Workspaces'][0]['IpAddress'] == ipadd:
-                    print ("found the worksapce that matches the IP")
+                    logger.info("found the worksapce that matches the IP")
                     break
-                print ("Failed getting assinged workspace")        
+                logger.error("Failed getting assinged workspace")
     except Exception as e:
             #logging all the others as warning
-            print ("Failed getting directory for region")
+            logger.error("Failed getting directory for region")
             wsid= "workspace_not_found"
             wsregion = "Not_found"
             DirectoryID = "Not_found"
     wsout= {'workspaceID': wsid,
                         'Region': wsregion,
                         'DirectoryID': DirectoryID}
-    print('wsout return is', wsout) 
+    logger.info('wsout return is %s', wsout) 
     return wsout
 
+
 def getws(username,wsregion,ipadd):
-    print(username)
+    logger.info('got the user name as %s',username)
     responseout = index(username,wsregion,ipadd)
     if not responseout['workspaceID']:
        return(
@@ -65,13 +69,13 @@ def getws(username,wsregion,ipadd):
 
 
 def lambda_handler(event, context):
-    print(event)
+    logger.info(event)
     hostname = event["queryStringParameters"]['hostname']
     wsusername = event["queryStringParameters"]['username']
     wsregion = event["queryStringParameters"]['region']
     ipadd = event["queryStringParameters"]['ipadd']
-    print ('got the hostname as',hostname)
-    instancelist = ssmclient.get_inventory(
+    logger.info('got the hostname as %s', hostname)
+    instancelist = ssmclient.get_inventory (
         Filters=[
                 {
                     'Key': 'AWS:InstanceInformation.ComputerName',
@@ -81,40 +85,33 @@ def lambda_handler(event, context):
                     'Type': 'Equal'
                 },
                             ],
-            ResultAttributes=[
-                {
-                    'TypeName': 'AWS:InstanceInformation'
-                },
-                  ])
-    print (instancelist)
-    for iw in range(0,len(instancelist['Entities'])):
-        print (iw)
-        Instid=instancelist['Entities'][iw]['Id']
-        print (Instid)
-        if instancelist['Entities'][iw]['Data']['AWS:InstanceInformation']['Content'][0]['InstanceStatus'] != 'Terminated' :
-                associationlist=[]
-                associationlist = ssmclient.describe_effective_instance_associations(
-                InstanceId=Instid
-                )
+            ResultAttributes=[{'TypeName': 'AWS:InstanceInformation'},])
+    logger.info(instancelist)
+    for Inst in range(0,len(instancelist['Entities'])):
+        logger.info (Inst)
+        Instid=instancelist['Entities'][Inst]['Id']
+        logger.info (Instid)
+        if instancelist['Entities'][Inst]['Data']['AWS:InstanceInformation']['Content'][0]['InstanceStatus'] != 'Terminated' :
+                associationlist = []
+                associationlist = ssmclient.describe_effective_instance_associations(InstanceId=Instid)
                 if associationlist['Associations']:
-                    print (associationlist)
+                    logger.info (associationlist)
                     for j in range(0,len(associationlist['Associations'])):
-                        print (j)
+                        logger.info (j)
                         assoc= associationlist['Associations'][j]['AssociationId']
-                        print (assoc)
+                        logger.info (assoc)
                         delassoc = ssmclient.delete_association(
-                        Name='string',
                         InstanceId=Instid,
                         AssociationId=assoc
                         )
                 try:
                     dereg_inst = ssmclient.deregister_managed_instance(InstanceId=Instid)
                 except:
-                    print ('unable to remove instance',Instid)
+                    logger.error ('unable to remove instance %s',Instid)
         else:
-            print('instance is terminated so going to next')
+            logger.info('instance is terminated so going to next')
     wsid=getws(wsusername,wsregion,ipadd)
-    print('got output from getwsfunction as', wsid)
+    logger.info('got output from getwsfunction as %s', wsid)
     if  wsid['workspaceID'] == "workspace_not_found":
         return {
             'statusCode': 200,
@@ -129,7 +126,7 @@ def lambda_handler(event, context):
         ExpirationDate=expiry
         )
         activationcode = activation['ActivationCode']
-        print ('the activation code is', activationcode)
+        logger.info ('the activation code is %s', activationcode)
         return {
         'statusCode': 200,
         'body': json.dumps({'activationcode': activationcode,'ActivationId':activation['ActivationId'], 

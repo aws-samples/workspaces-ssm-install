@@ -1,4 +1,4 @@
-
+---
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: 
@@ -12,45 +12,45 @@ Globals:
     Timeout: 120
     MemorySize: 128
 Parameters:
-  ssmregion:
+  SsmRegion:
     Type: String
     Description: The region you want to have Managed instances in SSM This is where you would deploy this stack.
     Default: 'us-east-1'
-  LDAPserverIP:
+  LdapServerIp:
     Type: String
     Description: IP Address of the DC that can be used to get group details
     Default: ''
-  SubnetID:
+  SubnetId:
     Type: String
     Description: Subnet ID of the AD connector.
     Default: ''
-  SGgroup:
+  SgGroup:
     Type: String
     Description: Security Group of the AD connector This is needed for the function to connect to AD and get groups
     Default: ''  
-  basedn:
+  BaseDn:
     Type: String
     Description: Domian base DN eg = DC=microsoft,dC=com
     Default: ''  
-  domain:
+  Domain:
     Type: String
     Description: domain name in the format conteso.com
     Default: '' 
-  user:
+  User:
     Type: String
     Description: AD username for ldap queries just only the username without any quotations
     Default: ''
 
 
 Resources:
-  wsfindandgetactivatefn:
+  WsFindAndGetActivatefn:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref ssmregion 
-        instancerole: !Ref WSMIRole
+        stackregion: !Ref SsmRegion  
+        instancerole: !Ref WsMiRole
       Policies:
       - Statement:
         - Sid: DSdescribePolicy
@@ -77,7 +77,7 @@ Resources:
           Action:
           - iam:PassRole
           - iam:GetRole
-          Resource: '*'   
+          Resource: !GetAtt WsMiRole.Arn   
    
       Events:
         wsfindandactivateapi:
@@ -95,13 +95,13 @@ Resources:
       DockerContext: ./findandactivate
       DockerTag: python3.9-v1
   
-  checkmistatus:
+  CheckmiStatus:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref ssmregion  
+        stackregion: !Ref SsmRegion  
       Policies:
       - Statement:
         - Sid: ssmgetconnectionstat
@@ -124,13 +124,13 @@ Resources:
       DockerContext: ./checkmistatus
       DockerTag: python3.9-v1
     
-  wsaddtagFunction:
+  WsAddTagFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
       Environment:
        Variables:
-        stackregion: !Ref ssmregion 
+        stackregion: !Ref SsmRegion 
       Policies:
       - Statement:
         - Sid: SSMpolicies
@@ -152,30 +152,30 @@ Resources:
             - method.request.querystring.directoryid
             - method.request.querystring.wsregion
             - method.request.querystring.OS
-            
+
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./wsaddtag
       DockerTag: python3.9-v1
       
-  addgrouptagfn:
+  AddGroupTagfn:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Environment:
        Variables:
-        stackregion: !Ref ssmregion 
-        ldapserv: !Ref LDAPserverIP
-        basedn: !Ref basedn
-        domain: !Ref domain
-        user: !Ref user
+        stackregion: !Ref SsmRegion 
+        ldapserv: !Ref LdapServerIp
+        basedn: !Ref BaseDn
+        domain: !Ref Domain
+        user: !Ref User
       VpcConfig:
         SecurityGroupIds: 
-          - !Ref SGgroup 
+          - !Ref SgGroup 
         SubnetIds:
-          - !Ref SubnetID
+          - !Ref SubnetId
       Policies:
       - Statement:
-        - Sid: ssmgetparam
+        - Sid: ssmperms
           Effect: Allow
           Action:
           - ssm:ListTagsForResource
@@ -186,7 +186,7 @@ Resources:
           Effect: Allow
           Action:
           - secretsmanager:GetSecretValue
-          Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:adpasswd*' 
+          Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:adpasswd*' 
           
       PackageType: Image
       Events:
@@ -201,13 +201,13 @@ Resources:
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./ad
-      DockerTag: python3.8-v1
+      DockerTag: python3.9-v1
   
-  WSMIRole:
+  WsMiRole:
     Type: 'AWS::IAM::Role'
     Properties:
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'  
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -228,34 +228,95 @@ Resources:
                   - ssmmessages:CreateDataChannel
                   - ssmmessages:OpenControlChannel
                   - ssmmessages:OpenDataChannel
-                  - s3:GetEncryptionConfiguration
                 Resource:
                   - '*'
               - Effect: Allow
                 Action:
                   - kms:Decrypt
                 Resource:
-                  - 'arn:aws:kms:us-east-1:233016454780:key/ad4f1a71-138e-404b-8be0-573287cd1098'
-
+                  - !Sub 'arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:alias/ssm' 
+                   
+  WsDeleteEvent:
+    Type: AWS::Events::Rule
+    Properties:   
+      Description: this event is triggered when WS is terminated
+      EventPattern: {
+                      "source": [
+                        "aws.workspaces"
+                      ],
+                      "detail-type": [
+                        "AWS API Call via CloudTrail"
+                      ],
+                      "detail": {
+                        "eventSource": [
+                          "workspaces.amazonaws.com"
+                        ],
+                        "eventName": [
+                          "TerminateWorkspaces",
+                          ""
+                        ]
+                      }
+                    }
+      State: ENABLED
+      Targets: 
+        - 
+          Arn:
+            Fn::GetAtt:
+              - "DeleteMIwhenWSDeleted"
+              - "Arn"
+          Id: "DeleteMIwhenWSDeleted"
+  DeleteMIwhenWSDeleted:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+       Variables:
+        stackregion: !Ref SsmRegion 
+      Policies:
+      - Statement:
+        - Sid: ssm
+          Effect: Allow
+          Action:
+          - ssm:DescribeInstanceInformation
+          - ssm:DeregisterManagedInstance
+          Resource: '*' 
+      PackageType: Image
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./cleanoldmi
+      DockerTag: python3.9-v1
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: 'DeleteMIwhenWSDeleted'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: 
+        Fn::GetAtt: 
+          - 'WsDeleteEvent'
+          - 'Arn'
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  SsmAutomationAPIEndpoint:
+  workspacessminstallapi:
     Description: "API Gateway endpoint Base URL"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  wsfindandgetactivatefn:
+  wsfindandgetactivatefuctionarn:
     Description: "get WSID search create activation Function ARN"
-    Value: !GetAtt wsfindandgetactivatefn.Arn
-  checkmistatus:
+    Value: !GetAtt WsFindAndGetActivatefn.Arn
+  checkmistatusfunctionarn:
     Description: "check managed instance status Function ARN"
-    Value: !GetAtt checkmistatus.Arn
-  wsaddtagFunction:
+    Value: !GetAtt CheckmiStatus.Arn
+  wsaddtagfunctionarn:
     Description: "Add tags to managed instance Function ARN"
-    Value: !GetAtt wsaddtagFunction.Arn
-  addgrouptagfn:
+    Value: !GetAtt WsAddTagFunction.Arn
+  addgrouptagfunctionarn:
     Description: "Add AD Group tags to managed instance Function ARN"
-    Value: !GetAtt addgrouptagfn.Arn
-  managedinstancerole:
+    Value: !GetAtt AddGroupTagfn.Arn
+  managedinstancerolearn:
     Description: "Role assumed by the SSM managed instances"
-    Value: !GetAtt WSMIRole.Arn  
+    Value: !GetAtt WsMiRole.Arn 
+  DeleteMIwhenWSDeletedFnArn:
+    Description: "Role assumed by the SSM managed instances"
+    Value: !GetAtt DeleteMIwhenWSDeleted.Arn     

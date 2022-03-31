@@ -6,5 +6,6 @@ After=network-online.target
 
 
 [Service]
+ExecStartPre=/bin/sleep 15
 ExecStart=/usr/bin/pwsh /usr/local/bin/finalmultiplatformloginscript.ps1
 Type=oneshot

@@ -2,18 +2,26 @@ import json
 import os
 import boto3
 import botocore.exceptions
+import logging
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 region = os.environ['stackregion']
-ssmclient = boto3.client('ssm', region)
+ssmclient = boto3.client('ssm',region)
+
 
 def lambda_handler(event, context):
-    print(event)
+    logger.info(event)
     wsid = event["queryStringParameters"]['wsid']
-    hostname= event["queryStringParameters"]['hostname']
-    print ('got the wsid as ',wsid)
+    hostname = event["queryStringParameters"]['hostname']
+    logger.info('got the wsid as %s', wsid)
+    
+    
     try:
-        print('getting instance information')
+        logger.info('getting instance information')
         instancelist = ssmclient.get_inventory(
-        Filters=[
+        Filters = [
                 {
                     'Key': 'AWS:InstanceInformation.ComputerName',
                     'Values': [
@@ -27,43 +35,47 @@ def lambda_handler(event, context):
                     'TypeName': 'AWS:InstanceInformation'
                 },
                   ])
-        print('instance list is', instancelist)
+        logger.info('instance list is %s', instancelist)
+    
+    
         if len(instancelist['Entities']) == 0 :
-            print ( 'The instance list is empty, so the machine thinkhs its managed but its not')
+            logger.info ( 'The instance list is empty, so the machine thinks its managed but its not')
             pingstat= "not_found" 
-            return {
+            return
+            {
             'statusCode': 200,
             'body': json.dumps({'pingstatus': pingstat})
             }
         else:
             for i in range(len(instancelist['Entities'])):
-                print (instancelist['Entities'][i])
+                logger.info('%s count instance is %s', i, instancelist['Entities'][i])
                 if instancelist['Entities'][i]['Id'] == wsid and instancelist['Entities'][i]['Data']['AWS:InstanceInformation']['Content'][0]['InstanceStatus'] != 'Terminated':
                     try:
-                        print ('Instance found in inventory and is not terminated hence continuing')
+                        logger.info ('%s Instance found in inventory and is not terminated hence continuing')
                         response = ssmclient.get_connection_status(
                                     Target=wsid
                                     )
-                        pingstat= response['Status']
+                        pingstat = response['Status']
                         if  pingstat == 'connected':
-                            print("machine is connected")
+                            logger.info("machine is connected %")
                             break
                     except botocore.exceptions.ClientError as error:
-                        print (error)
-                        print('error calling instance info')
+                        logger.info (error)
+                        logger.error('%s error calling instance info')
                         pingstat= "error"
-                    print ('got ping status response as', pingstat)
+                    logger.info ('%s got ping status response as', pingstat)
                 else :
-                    print('managed instance terminated')
+                    logger.info('%s managed instance terminated')
                     pingstat= "not_found" 
 
+
     except botocore.exceptions.ClientError as error: 
-        print (error)
-        print('error calling instance info')
+        logger.error (error)
+        logger.error('error calling instance info')
         pingstat= "error"
     
 
     return {
     'statusCode': 200,
     'body': json.dumps({'pingstatus': pingstat})
-    }
+            }
