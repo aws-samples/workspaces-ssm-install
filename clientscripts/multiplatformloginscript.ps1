@@ -1,3 +1,4 @@
+
 <# 
 .Synopsis 
    Add the workspace as a managed instance 
@@ -221,7 +222,7 @@ function installssm {
     $managedinstid = ssmregcheck($BaseOS)
     write-log -Message " Found the MI ID from SSM as $managedinstid " -path $logfile -level INFO
     $wstagstringurladd = "wsmiaddtag/?wsid=" + $workspaceID + "&miid=" + $managedinstid.'instance-id' + "&hostname=" +
-    $hostname + "&username=" + $username + "&directoryid=" + $DirectoryID + "&wsregion=" + $wsregion 
+    $hostname + "&username=" + $username + "&directoryid=" + $DirectoryID + "&wsregion=" + $wsregion + "&OS=" + $BaseOS
     $finaladdtaguri = $wsfbaseurl + $wstagstringurladd
     write-log -Message "final add ws tag url is $finaladdtaguri " -path $logfile -level INFO
     write-log -Message "adding tag to instance " -path $logfile -level INFO
@@ -292,7 +293,7 @@ switch ($BaseOS) {
         write-log -Message "hostnamefqdn is $hostnamefqdn" -path $logfile -level INFO
         Set-Variable -Name "hostnamefqdn" -Value ($hostnamefqdn) -Scope global
         $getint = get-netroute | where-object { $_.DestinationPrefix -eq "0.0.0.0/0" -and $_.RouteMetric -eq "0" } | Select-Object InterfaceIndex
-        $ipadd = get-netipaddress -InterfaceIndex $getint.InterfaceIndex
+        $ipadd = (get-netipaddress -InterfaceIndex $getint.InterfaceIndex).IPv4Address
         Set-Variable -Name "ipadd" -Value ($ipadd) -Scope global
     }
     MacOS {
