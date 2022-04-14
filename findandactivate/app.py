@@ -38,12 +38,13 @@ def index(wuser,wsregion,ipadd):
                     UserName = wuser)
                     wsid = ws['Workspaces'][0]['WorkspaceId']
                     logger.info("Workspace found %s",ws)
+                    if ws['Workspaces'][0]['IpAddress'] == ipadd:
+                        logger.info("found the worksapce that matches the IP")
+                        break
                 except Exception as e:
                     #logging all the others as warning
                     logger.error("failed getting workspace %s",e)
-                if ws['Workspaces'][0]['IpAddress'] == ipadd:
-                    logger.info("found the worksapce that matches the IP")
-                    break
+
                 logger.error("Failed getting assinged workspace")
     except Exception as e:
             #logging all the others as warning
