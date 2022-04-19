@@ -355,6 +355,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       MemorySize: 256
+      Timeout: 60
       Environment:
        Variables:
         stackregion: !Ref SsmRegion 
@@ -398,6 +399,8 @@ Resources:
       DockerTag: python3.9-v1
   MySqsQueue:
     Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 70
 
   MySqsQueuePolicy: 
     Type: AWS::SQS::QueuePolicy
