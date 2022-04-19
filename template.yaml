@@ -300,7 +300,6 @@ Resources:
     Properties:
       Description: This is the CW event to trigger refresh of AD group tags for workspaces
       Name: WsTagRenwalCronRule
-      RoleArn: String
       ScheduleExpression: "rate(4 hours)"
       State: ENABLED
       Targets: 
