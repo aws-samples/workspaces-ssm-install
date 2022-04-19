@@ -419,8 +419,8 @@ Resources:
             Resource: !GetAtt [MySqsQueue, Arn]
             Principal:  
               AWS: 
-              - !GetAtt SendMiToSqs.Arn
-              - !GetAtt TaggerSQSworker.Arn
+              - !GetAtt SendMiToSqsRole.Arn
+              - !GetAtt TaggerSQSworkerRole.Arn
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
