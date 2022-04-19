@@ -273,7 +273,7 @@ Resources:
   SendMiToSqs:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      MemorySize: 256
+      MemorySize: 128
       Environment:
        Variables:
         stackregion: !Ref SsmRegion 
@@ -399,8 +399,8 @@ Resources:
   MySqsQueue:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 70
-
+      VisibilityTimeout: 120
+      MessageRetentionPeriod: 300
   MySqsQueuePolicy: 
     Type: AWS::SQS::QueuePolicy
     Properties: 

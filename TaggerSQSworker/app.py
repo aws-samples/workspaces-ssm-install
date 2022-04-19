@@ -18,17 +18,21 @@ ssmclient = boto3.client('ssm', region)
 sec = boto3.client(service_name='secretsmanager',region_name=region)
 
 def getadgroups(miid,username):
-    logger.info('user is %s', username)
+    logger.info('getting ad group for user %s', username)
     get_secret_val = sec.get_secret_value(
             SecretId = secretname
         )
     serchstring = "(&(objectclass=user)(sAMAccountName=" + username + "))"
     server = Server(ldapserv, get_info=ALL)
     conn = Connection(server, user=ldapuser, password=get_secret_val['SecretString'], authentication=NTLM, auto_bind=True)
-    conn.search(basedn,serchstring, attributes=['memberOf'])
-    response = json.loads(conn.response_to_json())
-    logger.info(response)
-    return response
+    if conn.result["description"] != "success":
+        logger.error("Error connecting to the LDAP with the service account")
+        return False
+    else:
+        conn.search(basedn,serchstring, attributes=['memberOf'])
+        response = json.loads(conn.response_to_json())
+        logger.info(response)
+        return response
     
                 
                 
@@ -75,11 +79,10 @@ def lambda_handler(event, context):
         for username, mangdinst in payloadlist:
             logger.info('user is %s',username)
             logger.info('instance is %s', mangdinst)
-            removeADgrouptags(ssmclient,mangdinst)
             groupoutput=getadgroups(mangdinst,username)['entries'][0]['attributes']['memberOf']
             if groupoutput:
+                removeADgrouptags(ssmclient,mangdinst)
                 tags_list = []
-                
                 for item in range(len(groupoutput)):
                     values = {}
                     membervalues = groupoutput[item].split(",")[0]
