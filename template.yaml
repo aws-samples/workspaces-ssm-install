@@ -351,7 +351,7 @@ Resources:
         Fn::GetAtt: 
           - 'WsDeleteEvent'
           - 'Arn'
-  SQSworker:
+  TaggerSQSworker:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       MemorySize: 256
@@ -417,8 +417,8 @@ Resources:
             Resource: !GetAtt [MySqsQueue, Arn]
             Principal:  
               AWS: 
-              - !GetAtt adgroupRole.Arn
-              - !GetAtt SQSworkerRole.Arn 
+              - !GetAtt SendMiToSqs.Arn
+              - !GetAtt TaggerSQSworker.Arn 
     DependsOn:
       - MySqsQueue
       - SQSworker
@@ -447,5 +447,14 @@ Outputs:
     Description: "Role assumed by the SSM managed instances"
     Value: !GetAtt WsMiRole.Arn 
   DeleteMIwhenWSDeletedFnArn:
-    Description: "Role assumed by the SSM managed instances"
-    Value: !GetAtt DeleteMIwhenWSDeleted.Arn     
+    Description: "Delete Managed Instance when workspace is deleted Function"
+    Value: !GetAtt DeleteMIwhenWSDeleted.Arn  
+  SendMitoSqsFunction:
+    Description: "Lambda function that gets Managed instance ID and sends to to SQS to be tagged"
+    Value: !GetAtt SendMiToSqs.Arn
+  TaggerSQSworkerFunction:
+    Description: "Worker Lambda that consumes from SQS to tag AD groups for Workspaces"
+    Value: !GetAtt TaggerSQSworker.Arn
+  MySqsQueue:
+    Description: "SQS queue that has is used for sending MI ID's to be tagged"
+    Value: !GetAtt MySqsQueue.Arn
