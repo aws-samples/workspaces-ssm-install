@@ -265,6 +265,31 @@ Resources:
               - "DeleteMIwhenWSDeleted"
               - "Arn"
           Id: "DeleteMIwhenWSDeleted"
+  SendMiToSqs:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      MemorySize: 256
+      Environment:
+       Variables:
+        stackregion: !Ref SsmRegion 
+        SQS: !Ref MySqsQueue
+      Policies:
+      - Statement:
+        - Sid: ssmperms
+          Effect: Allow
+          Action:
+          - ssm:ListTagsForResource
+          - ssm:AddTagsToResource
+          - ssm:RemoveTagsFromResource
+          - ssm:DescribeInstanceInformation
+          Resource: '*'
+      PackageType: Image
+      Architectures:
+        - x86_64
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./sendmitosqs
+      DockerTag: python3.9-v1
   DeleteMIwhenWSDeleted:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -295,6 +320,79 @@ Resources:
         Fn::GetAtt: 
           - 'WsDeleteEvent'
           - 'Arn'
+  SQSworker:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      MemorySize: 256
+      Environment:
+       Variables:
+        stackregion: !Ref SsmRegion 
+        ldapserv: !Ref LdapServerIp
+        basedn: !Ref BaseDn
+        domain: !Ref Domain
+        user: !Ref User
+        secretname: !Ref ADPasswordSecretName
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SgGroup 
+        SubnetIds:
+          - !Ref SubnetId
+      Policies:
+      - Statement:
+        - Sid: ssmperms
+          Effect: Allow
+          Action:
+          - ssm:ListTagsForResource
+          - ssm:AddTagsToResource
+          - ssm:RemoveTagsFromResource
+          - ssm:DescribeInstanceInformation
+          Resource: '*'
+        - Sid: secrets
+          Effect: Allow
+          Action:
+          - secretsmanager:GetSecretValue
+          Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:adpasswd*' 
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Events:
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MySqsQueue.Arn
+            BatchSize: 2
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./TaggerSQSworker
+      DockerTag: python3.9-v1
+  MySqsQueue:
+    Type: AWS::SQS::Queue
+
+  MySqsQueuePolicy: 
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref MySqsQueue
+      PolicyDocument: 
+        Id: MyDQueuePolicy
+        Version: '2012-10-17'
+        Statement: 
+          - Sid: workerperms
+            Action: 
+              - "SQS:SendMessage" 
+              - "SQS:ReceiveMessage"
+              - "SQS:DeleteMessage"
+            Effect: "Allow"
+            Resource: !GetAtt [MySqsQueue, Arn]
+            Principal:  
+              AWS: 
+              - !GetAtt adgroupRole.Arn
+              - !GetAtt SQSworkerRole.Arn 
+    DependsOn:
+      - MySqsQueue
+      - SQSworker
+      - adgroup
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
