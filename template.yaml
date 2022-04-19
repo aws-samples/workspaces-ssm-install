@@ -244,6 +244,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:   
       Description: this event is triggered when WS is terminated
+      Name: WSDeleteEventrule
       EventPattern: {
                       "source": [
                         "aws.workspaces"
@@ -294,6 +295,32 @@ Resources:
       Dockerfile: Dockerfile
       DockerContext: ./sendmitosqs
       DockerTag: python3.9-v1
+  CronforTagRenewal:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: This is the CW event to trigger refresh of AD group tags for workspaces
+      Name: WsTagRenwalCronRule
+      RoleArn: String
+      ScheduleExpression: "rate(4 hours)"
+      State: ENABLED
+      Targets: 
+        - 
+          Arn:
+            Fn::GetAtt:
+              - "SendMiToSqs"
+              - "Arn"
+          Id: "SendMiToSqs"
+  PermForCronforTagRenewalEventToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: 'SendMiToSqs'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: 
+        Fn::GetAtt: 
+          - 'CronforTagRenewal'
+          - 'Arn'
   DeleteMIwhenWSDeleted:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -313,7 +340,7 @@ Resources:
       Dockerfile: Dockerfile
       DockerContext: ./cleanoldmi
       DockerTag: python3.9-v1
-  PermissionForEventsToInvokeLambda: 
+  PermForWSDeleteEventToInvokeLambda: 
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: 
