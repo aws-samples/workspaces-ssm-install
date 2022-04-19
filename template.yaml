@@ -40,6 +40,10 @@ Parameters:
     Type: String
     Description: AD username for ldap queries just only the username without any quotations
     Default: ''
+  ADPasswordSecretName:
+    Type: String
+    Description: The name of the secret that has the password for the AD user stored
+    Default: 'adpasswd'
 
 
 Resources:
