@@ -66,7 +66,7 @@ def removeADgrouptags(miid):
         if listtag['TagList'][tags]['Key'].startswith('ADGroup'):
             removekeyarray.append(listtag['TagList'][tags]['Key']) 
         elif listtag['TagList'][tags]['Key'] == 'directoryid':
-            directoryid=listtag['TagList'][tags]['value']
+            directoryid=listtag['TagList'][tags]['Value']
         else:    
             continue
     logger.info('got the tags to remove as %s ',removekeyarray)
