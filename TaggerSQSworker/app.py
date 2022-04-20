@@ -25,7 +25,8 @@ ddbtable= os.environ['ddbtable']
 ldapuser = ldapdomain +'\\'+ldapname
 ssmclient = boto3.client('ssm', region,config=config)
 sec = boto3.client('secretsmanager',region,config=config)
-dynamodb = boto3.client('dynamodb', region,config=config)
+dynamodb = boto3.resource('dynamodb', region,config=config)
+client = boto3.client('dynamodb', region)
 table = dynamodb.Table(ddbtable)
 
 
@@ -82,7 +83,7 @@ def removeADgrouptags(miid):
 def searchiteminddb(username,directoryid):
     result = Query(table=ddbtable) \
             .key(Username= username, DirectoryID=directoryid) \
-            .execute(dynamodb)
+            .execute(client)
     if result.items:
         return True
     else:
