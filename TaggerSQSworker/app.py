@@ -25,7 +25,7 @@ ddbtable= os.environ['ddbtable']
 ldapuser = ldapdomain +'\\'+ldapname
 ssmclient = boto3.client('ssm', region,config=config)
 sec = boto3.client('secretsmanager',region,config=config)
-dynamodb = boto3.resource('dynamodb', region,config=config)
+dynamodb = boto3.client('dynamodb', region,config=config)
 table = dynamodb.Table(ddbtable)
 
 
