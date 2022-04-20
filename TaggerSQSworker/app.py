@@ -27,7 +27,7 @@ ssmclient = boto3.client('ssm', region,config=config)
 sec = boto3.client('secretsmanager',region,config=config)
 dynamodb = boto3.resource('dynamodb', region,config=config)
 table = dynamodb.Table(ddbtable)
-querytable = Query(table=ddbtable)
+
 
 def getadgroups(miid,username):
     logger.info('getting ad group for user %s', username)
@@ -80,7 +80,9 @@ def removeADgrouptags(miid):
     return directoryid
 
 def searchiteminddb(username,directoryid):
-    result = querytable.key(Username= username, DirectoryID= directoryid).execute(dynamodb)
+    result = Query(table=ddbtable) \
+            .key(Username= username, DirectoryID=directoryid) \
+            .execute(dynamodb)
     if result.items:
         return True
     else:
