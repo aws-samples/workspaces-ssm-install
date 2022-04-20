@@ -80,7 +80,7 @@ def removeADgrouptags(miid):
     return directoryid
 
 def searchiteminddb(username,directoryid):
-    result = table.key(Username= username, DirectoryID= directoryid).execute(dynamodb)
+    result = querytable.key(Username= username, DirectoryID= directoryid).execute(dynamodb)
     if result.items:
         return True
     else:
