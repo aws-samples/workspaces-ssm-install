@@ -44,6 +44,10 @@ Parameters:
     Type: String
     Description: The name of the secret that has the password for the AD user stored
     Default: 'adpasswd'
+  DynamoTable:
+    Type: String
+    Description: The name of the secret that has the password for the AD user stored
+    Default: 'WS_SSM_tag_data'
 
 
 Resources:
@@ -363,6 +367,7 @@ Resources:
         domain: !Ref Domain
         user: !Ref User
         secretname: !Ref ADPasswordSecretName
+        ddbtable: !Ref DynamoTable
       VpcConfig:
         SecurityGroupIds: 
           - !Ref SgGroup 
